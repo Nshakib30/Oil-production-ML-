@@ -1,6 +1,6 @@
 # Volve Oil Recovery Predictor
 
-**Live app:** [petroml.streamlit.app](https://petroml.streamlit.app/)
+**Live app:** [https://petroml.streamlit.app/](https://petrum.streamlit.app/)
 
 An interactive machine learning demo that predicts daily oil production from well operating parameters, using a tuned XGBoost model with SHAP-based explainability. Built as the applied companion to a research paper on explainable AI for petroleum reservoir engineering.
 
