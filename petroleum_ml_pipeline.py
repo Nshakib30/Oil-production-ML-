@@ -191,6 +191,8 @@ def train_baseline_models(X_train, X_test, y_train, y_test):
         "Random Forest": RandomForestRegressor(n_estimators=200, random_state=RANDOM_STATE, n_jobs=-1),
         "ANN": MLPRegressor(hidden_layer_sizes=(64, 32), max_iter=2000,
                              random_state=RANDOM_STATE, early_stopping=True),
+        "XGBoost": XGBRegressor(n_estimators=200, learning_rate=0.08, gamma=0, subsample=0.75,
+                            colsample_bytree=1, max_depth=7),
     }
 
     results = []
