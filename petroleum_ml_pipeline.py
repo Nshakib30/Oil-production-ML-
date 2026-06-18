@@ -143,14 +143,11 @@ def build_model_dataset(df):
     AVG_DOWNHOLE_PRESSURE is dropped because it correlates 0.92 with
     PRESSURE_DRAWDOWN once the gauge fix is applied. is_producing is
     dropped because it's constant after shut-in rows are removed.
-    WATER_CUT (water / (oil + water)) is never computed here because
-    it contains the target in its own formula and would leak it
-    directly into the model.
     """
     df = df.dropna(subset=["BORE_OIL_VOL"]).copy()
     df = pd.get_dummies(df, columns=["WELL_BORE_CODE"], prefix="WELL")
 
-    drop_cols = ["DATEPRD", "AVG_DOWNHOLE_PRESSURE", "is_producing", "WATER_CUT", "BORE_OIL_VOL"]
+    drop_cols = ["DATEPRD", "AVG_DOWNHOLE_PRESSURE", "is_producing", "BORE_OIL_VOL"]
     X = df.drop(columns=[c for c in drop_cols if c in df.columns])
     y = df["BORE_OIL_VOL"]
     return X, y
