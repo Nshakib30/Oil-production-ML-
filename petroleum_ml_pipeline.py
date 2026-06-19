@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import shap
 
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, TimeSeriesSplit
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
@@ -134,27 +134,27 @@ def fix_gauge_and_engineer_features(df):
     return df
 
 
-def build_model_dataset(df):
-    """Drop rows with no target, encode well identity, and finalize X/y.
+def build_and_split_by_time(df, test_size=TEST_SIZE):
+    """Encode well identity, then split chronologically instead of randomly.
 
-    BORE_OIL_VOL is never imputed; gaps reflect Volve's periodic
-    well-test reporting and rows without it are excluded.
-
-    AVG_DOWNHOLE_PRESSURE is dropped because it correlates 0.92 with
-    PRESSURE_DRAWDOWN once the gauge fix is applied. is_producing is
-    dropped because it's constant after shut-in rows are removed.
+    Daily production is a time series: adjacent days from the same well are
+    nearly identical, so a shuffled split leaks that similarity into the test
+    set and inflates R². Holding out the most recent dates gives an honest
+    estimate of performance on genuinely unseen future production.
     """
     df = df.dropna(subset=["BORE_OIL_VOL"]).copy()
     df = pd.get_dummies(df, columns=["WELL_BORE_CODE"], prefix="WELL")
+    df = df.sort_values("DATEPRD")
 
     drop_cols = ["DATEPRD", "AVG_DOWNHOLE_PRESSURE", "is_producing", "BORE_OIL_VOL"]
-    X = df.drop(columns=[c for c in drop_cols if c in df.columns])
-    y = df["BORE_OIL_VOL"]
-    return X, y
+    feature_cols = [c for c in df.columns if c not in drop_cols]
 
+    split_idx = int(len(df) * (1 - test_size))
+    train_df, test_df = df.iloc[:split_idx], df.iloc[split_idx:]
 
-def split_data(X, y):
-    return train_test_split(X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE)
+    X_train, y_train = train_df[feature_cols], train_df["BORE_OIL_VOL"]
+    X_test,  y_test  = test_df[feature_cols],  test_df["BORE_OIL_VOL"]
+    return X_train, X_test, y_train, y_test
 
 
 # ---------------------------------------------------------------
@@ -218,7 +218,7 @@ def tune_xgboost(X_train, y_train, X_test, y_test):
         "model__subsample": [0.8, 1.0],
     }
 
-    grid_search = GridSearchCV(pipe, param_grid, cv=5, scoring="r2", n_jobs=-1)
+    grid_search = GridSearchCV(pipe, param_grid, cv=TimeSeriesSplit(n_splits=5), scoring="r2", n_jobs=-1)
     grid_search.fit(X_train, y_train)
 
     best_pipe = grid_search.best_estimator_
@@ -325,14 +325,18 @@ def run_shap_analysis(best_pipe, X_test, output_dir):
 # ---------------------------------------------------------------
 
 def save_artifacts(best_pipe, feature_columns, output_dir):
-    """Save the full pipeline (scaler + model bundled together).
+    """Save the three files app.py loads, so the repo is reproducible
+    end-to-end from this script alone.
 
-    Because the scaler is already part of the pipeline, a deployed
-    app only needs to load this one file and call .predict() on raw,
-    unscaled input rows, no separate scaler file required.
+    Saves model.pkl, scaler.pkl, and feature_columns.pkl separately so
+    that app.py can load each artifact independently, exactly as it
+    expects. Previously only model_pipeline.pkl was written, which
+    didn't match what the deployed app actually loads.
     """
-    with open(f"{output_dir}/model_pipeline.pkl", "wb") as f:
-        pickle.dump(best_pipe, f)
+    with open(f"{output_dir}/model.pkl", "wb") as f:
+        pickle.dump(best_pipe.named_steps["model"], f)
+    with open(f"{output_dir}/scaler.pkl", "wb") as f:
+        pickle.dump(best_pipe.named_steps["scaler"], f)
     with open(f"{output_dir}/feature_columns.pkl", "wb") as f:
         pickle.dump(list(feature_columns), f)
 
@@ -346,8 +350,7 @@ def main():
     df = clean_raw_data(df)
     df = fix_gauge_and_engineer_features(df)
 
-    X, y = build_model_dataset(df)
-    X_train, X_test, y_train, y_test = split_data(X, y)
+    X_train, X_test, y_train, y_test = build_and_split_by_time(df)
 
     baseline_results, baseline_pipelines = train_baseline_models(X_train, X_test, y_train, y_test)
     best_pipe, xgb_result = tune_xgboost(X_train, y_train, X_test, y_test)
@@ -366,7 +369,7 @@ def main():
     print("\nSHAP feature importance ranking:")
     print(importance_ranking)
 
-    save_artifacts(best_pipe, X.columns, OUTPUT_DIR)
+    save_artifacts(best_pipe, X_train.columns, OUTPUT_DIR)
     print(f"\nDone. Figures and model artifacts saved to {OUTPUT_DIR}/")
 
 

@@ -13,7 +13,7 @@ Most ML models stop at giving you a number. This one explains *why* it predicted
 ## How it works
 
 1. **Trained on real data** — 8 years of daily production from the Equinor Volve North Sea field (publicly available data)
-2. **Five models tested** — Linear Regression, SVR, Random Forest, ANN, XGBoost. XGBoost won with 94.5% accuracy
+2. **Five models tested** — Linear Regression, SVR, Random Forest, ANN, XGBoost. XGBoost performed best, with an R² of 0.945 — it explains 94.5% of the variance in daily oil production (RMSE ≈ 59 bbl/day, MAE ≈ 31 bbl/day)
 3. **Every prediction explained** — SHAP shows which inputs drove each forecast
 
 ## Key insight
