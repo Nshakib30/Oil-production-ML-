@@ -1,6 +1,6 @@
 # Volve Oil Recovery Predictor
 
-**Live demo:** [petroml.streamlit.app](https://petroml.streamlit.app/)
+**Live demo:** [petrum.streamlit.app](https://petrum.streamlit.app/)
 
 ## What is this?
 
