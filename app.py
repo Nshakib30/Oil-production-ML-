@@ -76,7 +76,6 @@ with st.sidebar:
     wht         = st.number_input("Wellhead Temperature, WHT (°C)",0.0, 100.0,  70.0, step=1.0)
     annulus     = st.number_input("Annulus Pressure (psi)",        0.0,  30.0,  15.0, step=0.5)
     choke       = st.number_input("Choke Size (%)",                0.0, 100.0,  50.0, step=1.0)
-    wat_vol     = st.number_input("Water Volume (bbl)",            0.0,1000.0,  50.0, step=10.0)
 
     st.subheader("Production")
     on_stream   = st.slider("On-Stream Hours", 0.0, 24.0, 24.0)
@@ -98,7 +97,6 @@ if predict_clicked:
     row["AVG_CHOKE_SIZE_P"]     = choke
     row["AVG_WHP_P"]            = whp
     row["AVG_WHT_P"]            = wht
-    row["BORE_WAT_VOL"]         = wat_vol
     row["PRESSURE_DRAWDOWN"]    = downhole_p - whp
     row["DOWNHOLE_GAUGE_VALID"] = int(gauge_valid)
     row[f"WELL_{well}"]         = 1
