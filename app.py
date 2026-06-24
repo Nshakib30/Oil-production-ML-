@@ -202,9 +202,9 @@ st.markdown("---")
 st.markdown('<p class="section-heading">Model Performance (Held-Out Test Set)</p>',
             unsafe_allow_html=True)
 m1, m2, m3 = st.columns(3)
-m1.metric("R²", "0.945", help="Proportion of variance explained. Closer to 1 is better.")
-m2.metric("RMSE", "58.78 bbl/day", help="Root Mean Squared Error — average prediction error.")
-m3.metric("MAE",  "30.94 bbl/day", help="Mean Absolute Error — typical day-to-day error.")
+m1.metric("R²", "0.935", help="Proportion of variance explained. Closer to 1 is better.")
+m2.metric("RMSE", "63.99 bbl/day", help="Root Mean Squared Error — average prediction error.")
+m3.metric("MAE",  "34.20 bbl/day", help="Mean Absolute Error — typical day-to-day error.")
 
 st.caption(
     "Tuned XGBoost model trained on the Equinor Volve field dataset. "
