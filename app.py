@@ -150,53 +150,50 @@ if st.session_state.last_shap is not None:
 
     bar_col, wf_col = st.columns([1.4, 1])
 
-    with bar_col:
-        st.caption("Feature Impact — how each variable pushed this prediction")
-        contrib = st.session_state.last_shap.sort_values()
-        colors  = ["#BF616A" if v < 0 else "#5B9BD5" for v in contrib.values]
-        shap_fig = go.Figure(go.Bar(
-            x=contrib.values, y=contrib.index,
-            orientation="h", marker_color=colors,
-        ))
-        shap_fig.update_layout(
-            height=380,
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font_color="#EDF1F5",
-            margin=dict(t=10, b=10, l=10, r=10),
-            xaxis_title="Impact on predicted oil volume (bbl/day)",
-            xaxis=dict(gridcolor="#2A3A4A"),
-        )
-        st.plotly_chart(shap_fig, use_container_width=True)
-        st.caption("Blue = pushes prediction up. Red = pushes prediction down.")
+   st.caption("Feature Impact — how each variable pushed this prediction")
+    contrib = st.session_state.last_shap.sort_values()
+    colors  = ["#BF616A" if v < 0 else "#5B9BD5" for v in contrib.values]
+    shap_fig = go.Figure(go.Bar(
+        x=contrib.values, y=contrib.index,
+        orientation="h", marker_color=colors,
+    ))
+    shap_fig.update_layout(
+        height=380,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color="#EDF1F5",
+        margin=dict(t=10, b=10, l=10, r=10),
+        xaxis_title="Impact on predicted oil volume (bbl/day)",
+        xaxis=dict(gridcolor="#2A3A4A"),
+    )
+    st.plotly_chart(shap_fig, use_container_width=True)
+    st.caption("Blue = pushes prediction up. Red = pushes prediction down.")
 
-    with wf_col:
-        st.caption("Waterfall plot — cumulative feature contributions from baseline")
-        try:
-            exp = explainer(st.session_state.last_X_scaled)
-            shap.plots.waterfall(exp[0], max_display=10, show=False)
-            fig_wf = plt.gcf()
-            fig_wf.set_size_inches(9, 6)
-            fig_wf.patch.set_facecolor("white")
-            fig_wf.subplots_adjust(left=0.35, right=0.88, top=0.88)
-            for ax in fig_wf.get_axes():
-                ax.set_facecolor("white")
-                ax.tick_params(colors="black")
-                ax.xaxis.label.set_color("black")
-                ax.yaxis.label.set_color("black")
-                for text in ax.texts:
-                    text.set_color("black")
-                    text.set_fontsize(9)
-                for spine in ax.spines.values():
-                    spine.set_edgecolor("#CCCCCC")
-            buf_wf = io.BytesIO()
-            plt.savefig(buf_wf, format="png", dpi=150,
-                         facecolor="white")
-            plt.close()
-            buf_wf.seek(0)
-            st.image(buf_wf, use_container_width=True)
-        except Exception as e:
-            st.warning(f"Waterfall unavailable: {e}")
+    st.caption("Waterfall plot — cumulative feature contributions from baseline")
+    try:
+        exp = explainer(st.session_state.last_X_scaled)
+        shap.plots.waterfall(exp[0], max_display=10, show=False)
+        fig_wf = plt.gcf()
+        fig_wf.set_size_inches(9, 6)
+        fig_wf.patch.set_facecolor("white")
+        fig_wf.subplots_adjust(left=0.35, right=0.88, top=0.88)
+        for ax in fig_wf.get_axes():
+            ax.set_facecolor("white")
+            ax.tick_params(colors="black")
+            ax.xaxis.label.set_color("black")
+            ax.yaxis.label.set_color("black")
+            for text in ax.texts:
+                text.set_color("black")
+                text.set_fontsize(9)
+            for spine in ax.spines.values():
+                spine.set_edgecolor("#CCCCCC")
+        buf_wf = io.BytesIO()
+        plt.savefig(buf_wf, format="png", dpi=150, facecolor="white")
+        plt.close()
+        buf_wf.seek(0)
+        st.image(buf_wf, use_container_width=True)
+    except Exception as e:
+        st.warning(f"Waterfall unavailable: {e}")
 
 # ---------------------------------------------------------------
 # Model performance
