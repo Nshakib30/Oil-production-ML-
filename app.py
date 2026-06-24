@@ -172,7 +172,7 @@ if st.session_state.last_shap is not None:
 
     with wf_col:
     st.caption("Waterfall plot — cumulative feature contributions from baseline")
-    try:
+        try:
         exp = explainer(st.session_state.last_X_scaled)
 
         # Don't create fig before calling waterfall — shap opens its own figure.
