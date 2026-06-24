@@ -148,7 +148,7 @@ if st.session_state.last_shap is not None:
     st.markdown("---")
     st.markdown('<p class="section-heading">SHAP Analysis</p>', unsafe_allow_html=True)
 
-   st.caption("Feature Impact — how each variable pushed this prediction")
+    st.caption("Feature Impact — how each variable pushed this prediction")
     contrib = st.session_state.last_shap.sort_values()
     colors  = ["#BF616A" if v < 0 else "#5B9BD5" for v in contrib.values]
     shap_fig = go.Figure(go.Bar(
